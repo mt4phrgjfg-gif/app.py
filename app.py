@@ -3,7 +3,21 @@ import google.generativeai as genai
 
 # --- 1. AYARLAR VE BEYİN BAĞLANTISI ---
 # Buraya Google AI Studio'dan aldığın API anahtarını tırnak içine yapıştır
-genai.configure(api_key="AIzaSyA-G0lgtnNtHga9_DHhLTcdn3Q2_VzcbLs")
+genai.configure(api_key="curl "https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent" \
+  -H 'Content-Type: application/json' \
+  -H 'X-goog-api-key: AIzaSyA-G0lgtnNtHga9_DHhLTcdn3Q2_VzcbLs' \
+  -X POST \
+  -d '{
+    "contents": [
+      {
+        "parts": [
+          {
+            "text": "Explain how AI works in a few words"
+          }
+        ]
+      }
+    ]
+  }'")
 model = genai.GenerativeModel('gemini-1.5-flash-latest')
 
 # --- 2. EKRAN TASARIMI ---
