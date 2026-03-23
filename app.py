@@ -6,7 +6,7 @@ st.set_page_config(page_title="Asistan Prime v26.0", page_icon="🦉", layout="c
 
 # --- 2. API ANAHTARI VE BEYİN BAĞLANTISI ---
 # ÖNEMLİ: Aşağıdaki tırnak içine kendi API anahtarını yapıştır!
-api_key = "AIzaSyA-G0lgtnNtHga9_DHhLTcdn3Q2_VzcbLs" 
+api_key = "omer alpTkMb1811" 
 
 if not api_key or api_key == "AIzaSy...":
     st.warning("⚠️ Lütfen kodun içindeki 'api_key' bölümüne kendi API anahtarını yapıştır!")
