@@ -16,7 +16,7 @@ if not api_key or api_key == "AIzaSy...":
 try:
     genai.configure(api_key=api_key)
     # En güncel ve hızlı model: gemini-1.5-flash-latest
-    model = genai.GenerativeModel("gemini-3.0-flash
+    model = genai.GenerativeModel("gemini-2.0-flash")
 except Exception as e:
     st.error(f"Bağlantı Hatası: {e}")
 
