@@ -5,7 +5,7 @@ import anthropic
 st.set_page_config(page_title="Asistan Prime v26.0", page_icon="🦉", layout="centered")
 
 # --- 2. API ANAHTARI ---
-client = anthropic.Anthropic(api_key="omer alpTkMb1811")
+client = anthropic.Anthropic(api_key="sk-ant-sk-omeralp1811@")
 
 # --- 3. YAN MENÜ ---
 with st.sidebar:
