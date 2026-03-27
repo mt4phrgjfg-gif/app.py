@@ -1,25 +1,24 @@
 import streamlit as st
 import google.generativeai as genai
 
-# --- 1. SAYFA AYARLARI ---
+# --- 1. TASARIM ---
 st.set_page_config(page_title="Asistan Prime v26.0", page_icon="🦉")
 st.title("🦉 Asistan Prime v26.0")
+st.caption("Güvenli Mod: Kararlı Bağlantı Aktif")
 
-# --- 2. GÜVENLİ BAĞLANTI (GEMINI) ---
+# --- 2. BAĞLANTI ---
 try:
-    # Secrets'tan anahtarı çekiyoruz
+    # Secrets'tan anahtarı alıyoruz
     api_key = st.secrets["GEMINI_KEY"]
     genai.configure(api_key=api_key)
     
-    # Hata veren 'v1beta' yerine en kararlı modeli seçiyoruz
-    # Eğer 'gemini-1.5-flash' hata verirse 'gemini-pro' otomatik devreye girer
-    model = genai.GenerativeModel('gemini-1.5-flash')
-    
+    # DİKKAT: Burada 'gemini-pro' kullanıyoruz çünkü 404 hatası vermeyen en sağlam model budur.
+    model = genai.GenerativeModel('gemini-pro')
 except Exception as e:
-    st.error(f"Bağlantı ayarlarında bir sorun var: {e}")
+    st.error(f"Anahtar hatası: {e}")
     st.stop()
 
-# --- 3. SOHBET GEÇMİŞİ ---
+# --- 3. HAFIZA ---
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
@@ -27,7 +26,7 @@ for message in st.session_state.messages:
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
 
-# --- 4. MESAJLAŞMA ---
+# --- 4. SOHBET ---
 if prompt := st.chat_input("Bana bir soru sor..."):
     st.session_state.messages.append({"role": "user", "content": prompt})
     with st.chat_message("user"):
@@ -35,13 +34,9 @@ if prompt := st.chat_input("Bana bir soru sor..."):
 
     with st.chat_message("assistant"):
         try:
-            # Mesajı oluştur ve cevabı al
+            # En sade ve çalışan komut
             response = model.generate_content(prompt)
             st.markdown(response.text)
             st.session_state.messages.append({"role": "assistant", "content": response.text})
         except Exception as e:
-            # Eğer model ismi hatası verirse alternatif modeli dene
-            st.warning("Model güncelleniyor, lütfen tekrar deneyin...")
-            model = genai.GenerativeModel('gemini-pro')
-            response = model.generate_content(prompt)
-            st.markdown(response.text)
+            st.error("Üzgünüm, bir bağlantı sorunu oldu. Lütfen tekrar deneyin.")
