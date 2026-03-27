@@ -5,7 +5,9 @@ import anthropic
 st.set_page_config(page_title="Asistan Prime v26.0", page_icon="🦉", layout="centered")
 
 # --- 2. API ANAHTARI ---
-client = anthropic.Anthropic(api_key="sk-ant-sk-omeralp1811@")
+# Artık anahtarı buraya yazmıyoruz, Streamlit'in kasasından çağırıyoruz.
+client = anthropic.Anthropic(api_key=st.secrets["CLAUDE_KEY"])
+
 
 # --- 3. YAN MENÜ ---
 with st.sidebar:
