@@ -1,42 +1,29 @@
 import streamlit as st
 import google.generativeai as genai
 
-# --- 1. TASARIM ---
 st.set_page_config(page_title="Asistan Prime v26.0", page_icon="🦉")
 st.title("🦉 Asistan Prime v26.0")
-st.caption("Güvenli Mod: Kararlı Bağlantı Aktif")
 
-# --- 2. BAĞLANTI ---
+# Anahtarı kasadan çek
 try:
-    # Secrets'tan anahtarı alıyoruz
-    api_key = st.secrets["GEMINI_KEY"]
-    genai.configure(api_key=api_key)
-    
-    # DİKKAT: Burada 'gemini-pro' kullanıyoruz çünkü 404 hatası vermeyen en sağlam model budur.
-    model = genai.GenerativeModel('gemini-pro')
+    genai.configure(api_key=st.secrets["GEMINI_KEY"])
+    model = genai.GenerativeModel('gemini-1.5-flash') # En hızlı model
 except Exception as e:
-    st.error(f"Anahtar hatası: {e}")
-    st.stop()
+    st.error(f"Kasa hatası: {e}")
 
-# --- 3. HAFIZA ---
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-for message in st.session_state.messages:
-    with st.chat_message(message["role"]):
-        st.markdown(message["content"])
+for msg in st.session_state.messages:
+    st.chat_message(msg["role"]).write(msg["content"])
 
-# --- 4. SOHBET ---
-if prompt := st.chat_input("Bana bir soru sor..."):
+if prompt := st.chat_input():
     st.session_state.messages.append({"role": "user", "content": prompt})
-    with st.chat_message("user"):
-        st.markdown(prompt)
-
-    with st.chat_message("assistant"):
-        try:
-            # En sade ve çalışan komut
-            response = model.generate_content(prompt)
-            st.markdown(response.text)
-            st.session_state.messages.append({"role": "assistant", "content": response.text})
-        except Exception as e:
-            st.error("Üzgünüm, bir bağlantı sorunu oldu. Lütfen tekrar deneyin.")
+    st.chat_message("user").write(prompt)
+    
+    try:
+        response = model.generate_content(prompt)
+        st.session_state.messages.append({"role": "assistant", "content": response.text})
+        st.chat_message("assistant").write(response.text)
+    except Exception as e:
+        st.error(f"API Hatası: {e}")
