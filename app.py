@@ -82,3 +82,101 @@ def kod_mutasyonu_uret(sorun):
     if "hız" in sorun or "yavaş" in sorun:
         return "
 
+# --- 4. ANA DÖNGÜ VE KULLANICI DENEYİMİ ---
+
+if "brain" not in st.session_state: st.session_state.brain = beyni_yukle()
+if "messages" not in st.session_state: st.session_state.messages = []
+if "last_viz" not in st.session_state: st.session_state.last_viz = None
+
+# Sidebar: Sistem Monitörü
+with st.sidebar:
+    st.header("💠 OMNI-CORE V30.5")
+    st.markdown(f"**Hafıza Ünitesi:** `{len(st.session_state.brain)}` Kavram")
+    st.markdown("**Neural Engine:** <span class='status-active'>AKTİF</span>", unsafe_allow_html=True)
+    st.markdown("**Termal Durum:** <span class='status-active'>OPTIMAL</span>", unsafe_allow_html=True)
+    st.write("---")
+    if st.button("Hafızayı Senkronize Et"):
+        st.session_state.brain = beyni_yukle()
+        st.toast("Hafıza güncellendi!")
+
+# Ana Ekran
+st.title("🦉 Asistan Prime: Omni-Genesis")
+col_chat, col_dash = st.columns([1, 1.2])
+
+with col_chat:
+    st.subheader("📟 Terminal")
+    chat_container = st.container(height=550)
+    for m in st.session_state.messages:
+        chat_container.chat_message(m["role"]).write(m["content"])
+
+with col_dash:
+    st.subheader("🔬 Genesis Dashboard")
+    tab_strat, tab_math, tab_robot = st.tabs(["Strateji Ağı", "Kuantum/Kaos", "Robotik Kontrol"])
+    
+    with tab_strat:
+        st.pyplot(strateji_agi_ciz())
+    
+    with tab_math:
+        c1, c2 = st.columns(2)
+        with c1: 
+            if st.button("Kaos Analizi (Lorenz)"):
+                st.session_state.last_viz = ("lorenz", lorenz_attractor())
+        with c2:
+            if st.button("Fraktal Stress Test"):
+                st.session_state.last_viz = ("fractal", mandelbrot_fractal())
+        
+        if st.session_state.last_viz:
+            v_type, v_data = st.session_state.last_viz
+            if v_type == "lorenz": st.pyplot(v_data)
+            else: 
+                fig, ax = plt.subplots()
+                ax.imshow(v_data, cmap='magma')
+                plt.axis('off')
+                st.pyplot(fig)
+
+    with tab_robot:
+        st.write("🛰️ **Spike Prime Gerçek Zamanlı Telemetri**")
+        gyro = st.slider("Jiroskop", -180, 180, 0)
+        st.progress(abs(gyro)/180, f"Denge Sapması: {gyro}°")
+        if st.button("Keşif Başlat"):
+            st.info(f"Otonom Tanımlama: {random.choice(['Buzul %92', 'Bazalt %14', 'Su %88'])}")
+
+# KOMUT İŞLEME
+if prompt := st.chat_input("Komut ver (Örn: 'Robot yavaşladı', 'Kaos analizi yap', 'X : Y öğret')"):
+    st.session_state.messages.append({"role": "user", "content": prompt})
+    p_l = prompt.lower()
+    
+    with st.status("🧠 Omni-Core İşliyor...", expanded=False) as s:
+        # 1. ÖĞRETME MODU
+        if ":" in prompt:
+            key, val = prompt.split(":", 1)
+            st.session_state.brain[key.strip().lower()] = val.strip()
+            beyni_guncelle(st.session_state.brain)
+            response = f"✅ **Hafıza Güncellendi:** '{key.strip()}' bilgisi kalıcı hale getirildi."
+        
+        # 2. DİNAMİK KOD MODU
+        elif any(x in p_l for x in ["yavaş", "hız", "motor", "hata"]):
+            code = kod_mutasyonu_uret(p_l)
+            response = f"🛠️ **Otonom Kod Üretimi:** Sorun tespit edildi, sistem kendini optimize ediyor:\n{code}"
+        
+        # 3. İLERİ ANALİZ TETİKLEYİCİ
+        elif "kaos" in p_l or "fractal" in p_l or "matematik" in p_l:
+            response = "🌀 **İleri Analiz:** Matematiksel motor tetiklendi. Sonuçları Dashboard 'Kuantum/Kaos' sekmesinde görebilirsiniz."
+        
+        # 4. HAFIZA SORGULAMA
+        else:
+            ans = None
+            for k, v in st.session_state.brain.items():
+                if k in p_l:
+                    ans = v
+                    break
+            if ans: response = f"💡 **Hafıza Kaydı:** {ans}"
+            else: response = "⚠️ Bilgi bulunamadı. Öğretmek için 'Konu : Açıklama' yazabilirsiniz."
+        
+        time.sleep(0.4)
+        s.update(label="İşlem Tamamlandı!", state="complete")
+    
+    st.session_state.messages.append({"role": "assistant", "content": response})
+    st.rerun()
+
+
