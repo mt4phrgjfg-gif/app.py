@@ -1,7 +1,7 @@
 streamlit
-requests
-pandas
+numpy
 matplotlib
 Pillow
-beautifulsoup4
-
+scipy
+pandas
+networkx
