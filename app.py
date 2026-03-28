@@ -1,38 +1,58 @@
 import streamlit as st
+import json
+import os
+import time
+import random
 import numpy as np
 import matplotlib.pyplot as plt
 import networkx as nx
-from PIL import Image, ImageDraw, ImageFilter
-import time
-import math
 import pandas as pd
+from PIL import Image, ImageDraw
+from scipy.spatial import ConvexHull
+import math
 
-# --- 1. SÜPER-GELİŞMİŞ SİSTEM AYARLARI ---
-st.set_page_config(page_title="Asistan Prime v27.5: SUPERNOVA", layout="wide", initial_sidebar_state="collapsed")
+# --- 1. SİSTEM KONFİGÜRASYONU VE ARAYÜZ ---
+st.set_page_config(page_title="Asistan Prime v30.5: OMNI-GENESIS", layout="wide", initial_sidebar_state="expanded")
 
-# Cyber-Grid Arayüz Tasarımı
+# Ultra-Modern Cyberpunk Arayüz
 st.markdown("""
     <style>
-    .stApp { background: #00050a; color: #00f2ff; font-family: 'Courier New', Courier, monospace; }
-    .stChatMessage { border-left: 5px solid #00f2ff; background: rgba(0, 242, 255, 0.05); }
-    .stHeader { text-shadow: 0 0 15px #00f2ff; }
+    .stApp { background: #010409; color: #58a6ff; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    .stChatMessage { border: 1px solid #30363d; background: #0d1117; border-radius: 12px; margin-bottom: 10px; }
+    .stSidebar { background-color: #0d1117 !important; border-right: 1px solid #30363d; }
+    .metric-card { background: rgba(88, 166, 255, 0.05); padding: 15px; border-radius: 10px; border: 1px solid #30363d; text-align: center; }
+    .status-active { color: #238636; font-weight: bold; text-shadow: 0 0 5px #238636; }
     </style>
     """, unsafe_allow_html=True)
 
-# --- 2. YENİ NESİL AJAN KATMANLARI ---
+HAFIZA_DOSYASI = "prime_brain.json"
 
-def otonom_mantik_agi(size=20):
-    """Nöral ağların düşünce yapısını simüle eden dinamik bir graf oluşturur."""
-    G = nx.erdos_renyi_graph(size, 0.2)
-    pos = nx.spring_layout(G)
-    fig, ax = plt.subplots(figsize=(8, 6))
-    nx.draw(G, pos, ax=ax, node_color='#00f2ff', edge_color='#ffffff', node_size=100, alpha=0.7, with_labels=False)
-    fig.patch.set_facecolor('#00050a')
-    ax.set_facecolor('#00050a')
-    return fig
+# --- 2. ÇEKİRDEK FONKSİYONLAR (HAFIZA VE VERİ) ---
 
-def kaos_teorisi_analizi(iterasyon=10000):
-    """Lorenz Attractor: Hava durumu ve karmaşık sistemlerin matematiksel modeli."""
+def beyni_yukle():
+    if os.path.exists(HAFIZA_DOSYASI):
+        try:
+            with open(HAFIZA_DOSYASI, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except: return {}
+    return {"sistem": "Omni-Genesis Çekirdeği Aktif."}
+
+def beyni_guncelle(yeni_hafiza):
+    with open(HAFIZA_DOSYASI, "w", encoding="utf-8") as f:
+        json.dump(yeni_hafiza, f, ensure_ascii=False, indent=4)
+
+# --- 3. İLERİ NESİL ANALİZ MODÜLLERİ ---
+
+# [v27.0] Neural Stress & Heavy Math
+def mandelbrot_fractal(size=400):
+    x, y = np.ogrid[-2:1:size*1j, -1.5:1.5:size*1j]
+    c = x + 1j*y
+    z = c
+    for i in range(50): z = z**2 + c
+    return z.real
+
+# [v27.5] Kaos Teorisi (Lorenz Attractor)
+def lorenz_attractor(iterasyon=5000):
     dt = 0.01
     xs, ys, zs = np.empty(iterasyon), np.empty(iterasyon), np.empty(iterasyon)
     xs[0], ys[0], zs[0] = (0., 1., 1.05)
@@ -40,72 +60,25 @@ def kaos_teorisi_analizi(iterasyon=10000):
         xs[i+1] = xs[i] + (10 * (ys[i] - xs[i])) * dt
         ys[i+1] = ys[i] + (xs[i] * (28 - zs[i]) - ys[i]) * dt
         zs[i+1] = zs[i] + (xs[i] * ys[i] - (8/3) * zs[i]) * dt
-    fig = plt.figure(figsize=(10, 7))
+    fig = plt.figure(figsize=(6, 4))
     ax = fig.add_subplot(111, projection='3d')
     ax.plot(xs, ys, zs, lw=0.5, color='#ff00ff')
     ax.set_axis_off()
-    fig.patch.set_facecolor('#00050a')
+    fig.patch.set_facecolor('#0d1117')
     return fig
 
-# --- 3. ANA MOTOR VE KULLANICI DENEYİMİ ---
+# [v30.0] Strateji Grafiği (Graph Theory)
+def strateji_agi_ciz():
+    G = nx.DiGraph()
+    G.add_edges_from([("Enerji", "Robot"), ("Güneş", "Enerji"), ("Robot", "Krater"), ("Krater", "Su"), ("Su", "Yaşam")])
+    fig, ax = plt.subplots(figsize=(6, 4))
+    nx.draw(G, nx.spring_layout(G), with_labels=True, node_color='#238636', edge_color='#58a6ff', font_color='white', ax=ax)
+    fig.patch.set_facecolor('#0d1117')
+    ax.set_facecolor('#0d1117')
+    return fig
 
-if "chat" not in st.session_state: st.session_state.chat = []
-if "memory_bank" not in st.session_state: st.session_state.memory_bank = {}
+# [v30.0] Dinamik Kod Üretimi (Self-Mutation)
+def kod_mutasyonu_uret(sorun):
+    if "hız" in sorun or "yavaş" in sorun:
+        return "
 
-st.title("💠 ASİSTAN PRIME v27.5: SUPERNOVA")
-st.caption("🚀 Neural Engine & GPU Acceleration: MAXIMIZED")
-
-col_chat, col_viz = st.columns([1, 1])
-
-with col_chat:
-    st.subheader("📡 Quantum Terminal")
-    chat_box = st.container(height=550)
-    for m in st.session_state.chat:
-        chat_box.chat_message(m["role"]).write(m["content"])
-
-with col_viz:
-    st.subheader("🧪 Hyper-Visual Lab")
-    viz_placeholder = st.empty()
-
-# KOMUT İŞLEME MERKEZİ
-if prompt := st.chat_input("Düşünce ağını başlat, kaos analizi yap veya yeni bir şey öğret..."):
-    st.session_state.chat.append({"role": "user", "content": prompt})
-    p_l = prompt.lower()
-    
-    with st.status("🛸 SUPERNOVA ÇEKİRDEĞİ ÇALIŞTIRILIYOR...", expanded=True) as s:
-        time.sleep(0.3)
-        
-        # 1. AJANLIK VE MANTIK AĞI (Yeni!)
-        if "ağ" in p_l or "düşün" in p_l:
-            st.write("🔗 Nöral Düşünce Ağı Haritalanıyor...")
-            fig = otonom_mantik_agi()
-            viz_placeholder.pyplot(fig)
-            response = "🧠 **Mantık Ağı:** Sorunuzu binlerce mikro-ajan katmanında analiz ettim ve sağ tarafa düşünce haritasını yansıttım."
-        
-        # 2. KAOS TEORİSİ (Yeni!)
-        elif "kaos" in p_l or "lorenz" in p_l:
-            st.write("🌪️ Kaos Denklemleri Çözülüyor (Lorenz Attractor)...")
-            fig = kaos_teorisi_analizi()
-            viz_placeholder.pyplot(fig)
-            response = "🌀 **Kaos Analizi:** Sistemin karmaşıklık katsayısını hesapladım. Apple Neural Engine şu an zirvede!"
-        
-        # 3. OTOMATİK VERİ KEŞFİ
-        elif "keşfet" in p_l:
-            df = pd.DataFrame(np.random.randn(20, 3), columns=['X', 'Y', 'Z'])
-            viz_placeholder.line_chart(df)
-            response = "📊 **Veri Keşfi:** Rastgele veri setleri üzerinde derin öğrenme modelleri simüle edildi."
-        
-        # 4. KLASİK HAFIZA
-        elif ":" in prompt:
-            k, v = prompt.split(":", 1)
-            st.session_state.memory_bank[k.strip().lower()] = v.strip()
-            response = f"💾 **Nöral Kayıt:** '{k.strip()}' kavramı kalıcı hücrelere işlendi."
-        
-        else:
-            response = "🤖 Komut anlaşılamadı. Lütfen 'Ağ başlat' veya 'Kaos analizi yap' gibi ileri düzey komutlar deneyin."
-
-        time.sleep(0.5)
-        s.update(label="İŞLEM TAMAMLANDI", state="complete")
-
-    st.session_state.chat.append({"role": "assistant", "content": response})
-    st.rerun()
