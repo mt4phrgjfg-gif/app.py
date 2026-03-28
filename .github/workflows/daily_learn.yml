@@ -1,0 +1,32 @@
+name: Asistan Prime Otonom Öğrenme
+
+on:
+  schedule:
+    - cron: '0 0 * * *' # Her gece 00:00'da çalışır
+  workflow_dispatch: # İstediğinde elle çalıştırmak için
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Kodları çek
+        uses: actions/checkout@v3
+
+      - name: Python Kur
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Kütüphaneleri Yükle
+        run: pip install requests
+
+      - name: Botu Çalıştır
+        run: python brain_feeder.py
+
+      - name: Hafızayı Kaydet ve Pushla
+        run: |
+          git config --global user.name 'Asistan Prime Bot'
+          git config --global user.email 'bot@asistanprime.com'
+          git add prime_brain.json
+          git commit -m "Otonom öğrenme: Hafıza güncellendi" || exit 0
+          git push
