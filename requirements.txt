@@ -1,4 +1,7 @@
 streamlit
 requests
-
+pandas
+matplotlib
+Pillow
+beautifulsoup4
 
