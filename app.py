@@ -27,3 +27,4 @@ if prompt := st.chat_input():
         st.chat_message("assistant").write(response.text)
     except Exception as e:
         st.error(f"API Hatası: {e}")
+
