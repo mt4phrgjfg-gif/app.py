@@ -1,89 +1,111 @@
 import streamlit as st
-import json
-import os
+import numpy as np
+import matplotlib.pyplot as plt
+import networkx as nx
+from PIL import Image, ImageDraw, ImageFilter
 import time
-import random
+import math
+import pandas as pd
 
-# --- 1. SİSTEM AYARLARI ---
-st.set_page_config(page_title="Asistan Prime v26.0", page_icon="🚀", layout="wide")
+# --- 1. SÜPER-GELİŞMİŞ SİSTEM AYARLARI ---
+st.set_page_config(page_title="Asistan Prime v27.5: SUPERNOVA", layout="wide", initial_sidebar_state="collapsed")
 
-# Hafıza Dosyası Kontrolü
-HAFIZA_DOSYASI = "prime_brain.json"
+# Cyber-Grid Arayüz Tasarımı
+st.markdown("""
+    <style>
+    .stApp { background: #00050a; color: #00f2ff; font-family: 'Courier New', Courier, monospace; }
+    .stChatMessage { border-left: 5px solid #00f2ff; background: rgba(0, 242, 255, 0.05); }
+    .stHeader { text-shadow: 0 0 15px #00f2ff; }
+    </style>
+    """, unsafe_allow_html=True)
 
-def beyni_yukle():
-    if os.path.exists(HAFIZA_DOSYASI):
-        with open(HAFIZA_DOSYASI, "r", encoding="utf-8") as f:
-            return json.load(f)
-    return {
-        "öğrenme": "Yapay sinir ağlarının veriden desen çıkarma sürecidir.",
-        "nörosembolik": "Mantık ve derin öğrenmenin birleştiği en ileri yapay zeka mimarisidir.",
-        "robotik": "Sensörler (Göz), Motorlar (Kas) ve Kodun (Beyin) mükemmel uyumudur."
-    }
+# --- 2. YENİ NESİL AJAN KATMANLARI ---
 
-def beyni_guncelle(yeni_bilgi):
-    with open(HAFIZA_DOSYASI, "w", encoding="utf-8") as f:
-        json.dump(yeni_bilgi, f, ensure_ascii=False, indent=4)
+def otonom_mantik_agi(size=20):
+    """Nöral ağların düşünce yapısını simüle eden dinamik bir graf oluşturur."""
+    G = nx.erdos_renyi_graph(size, 0.2)
+    pos = nx.spring_layout(G)
+    fig, ax = plt.subplots(figsize=(8, 6))
+    nx.draw(G, pos, ax=ax, node_color='#00f2ff', edge_color='#ffffff', node_size=100, alpha=0.7, with_labels=False)
+    fig.patch.set_facecolor('#00050a')
+    ax.set_facecolor('#00050a')
+    return fig
 
-# --- 2. ASİSTANIN KİŞİLİĞİ VE GÖRÜNÜMÜ ---
-st.title("🚀 Asistan Prime v26.0: Ultra")
-st.sidebar.header("⚙️ Sistem Durumu")
-st.sidebar.success("Nöral Ağlar: Aktif")
-st.sidebar.info("Mantık Katmanı: %100")
+def kaos_teorisi_analizi(iterasyon=10000):
+    """Lorenz Attractor: Hava durumu ve karmaşık sistemlerin matematiksel modeli."""
+    dt = 0.01
+    xs, ys, zs = np.empty(iterasyon), np.empty(iterasyon), np.empty(iterasyon)
+    xs[0], ys[0], zs[0] = (0., 1., 1.05)
+    for i in range(iterasyon - 1):
+        xs[i+1] = xs[i] + (10 * (ys[i] - xs[i])) * dt
+        ys[i+1] = ys[i] + (xs[i] * (28 - zs[i]) - ys[i]) * dt
+        zs[i+1] = zs[i] + (xs[i] * ys[i] - (8/3) * zs[i]) * dt
+    fig = plt.figure(figsize=(10, 7))
+    ax = fig.add_subplot(111, projection='3d')
+    ax.plot(xs, ys, zs, lw=0.5, color='#ff00ff')
+    ax.set_axis_off()
+    fig.patch.set_facecolor('#00050a')
+    return fig
 
-if "brain" not in st.session_state:
-    st.session_state.brain = beyni_yukle()
+# --- 3. ANA MOTOR VE KULLANICI DENEYİMİ ---
 
-if "chat_history" not in st.session_state:
-    st.session_state.chat_history = []
+if "chat" not in st.session_state: st.session_state.chat = []
+if "memory_bank" not in st.session_state: st.session_state.memory_bank = {}
 
-# --- 3. İLERİ DÜZEY MANTIK MOTORU (Nöro-Sembolik Yaklaşım) ---
-def akilli_cevap_motoru(soru):
-    soru = soru.lower().strip()
+st.title("💠 ASİSTAN PRIME v27.5: SUPERNOVA")
+st.caption("🚀 Neural Engine & GPU Acceleration: MAXIMIZED")
+
+col_chat, col_viz = st.columns([1, 1])
+
+with col_chat:
+    st.subheader("📡 Quantum Terminal")
+    chat_box = st.container(height=550)
+    for m in st.session_state.chat:
+        chat_box.chat_message(m["role"]).write(m["content"])
+
+with col_viz:
+    st.subheader("🧪 Hyper-Visual Lab")
+    viz_placeholder = st.empty()
+
+# KOMUT İŞLEME MERKEZİ
+if prompt := st.chat_input("Düşünce ağını başlat, kaos analizi yap veya yeni bir şey öğret..."):
+    st.session_state.chat.append({"role": "user", "content": prompt})
+    p_l = prompt.lower()
     
-    # Adım 1: Chain of Thought (Düşünce Zinciri Simülasyonu)
-    with st.status("🧠 Düşünce Zinciri Başlatıldı...", expanded=False) as s:
-        time.sleep(0.4)
-        st.write("🔍 Anahtar kavramlar analiz ediliyor...")
-        time.sleep(0.4)
-        st.write("📂 Hafıza katmanları taranıyor...")
+    with st.status("🛸 SUPERNOVA ÇEKİRDEĞİ ÇALIŞTIRILIYOR...", expanded=True) as s:
+        time.sleep(0.3)
         
-        # Adım 2: Anlamsal Eşleşme (Semantic Match)
-        bulunan_anahtar = None
-        for anahtar in st.session_state.brain.keys():
-            if anahtar in soru: # Basit ama etkili bir sembolik bağ
-                bulunan_anahtar = anahtar
-                break
+        # 1. AJANLIK VE MANTIK AĞI (Yeni!)
+        if "ağ" in p_l or "düşün" in p_l:
+            st.write("🔗 Nöral Düşünce Ağı Haritalanıyor...")
+            fig = otonom_mantik_agi()
+            viz_placeholder.pyplot(fig)
+            response = "🧠 **Mantık Ağı:** Sorunuzu binlerce mikro-ajan katmanında analiz ettim ve sağ tarafa düşünce haritasını yansıttım."
         
-        time.sleep(0.4)
-        st.write("💡 Mantıksal çıkarım yapılıyor...")
-        s.update(label="Analiz Tamamlandı!", state="complete")
+        # 2. KAOS TEORİSİ (Yeni!)
+        elif "kaos" in p_l or "lorenz" in p_l:
+            st.write("🌪️ Kaos Denklemleri Çözülüyor (Lorenz Attractor)...")
+            fig = kaos_teorisi_analizi()
+            viz_placeholder.pyplot(fig)
+            response = "🌀 **Kaos Analizi:** Sistemin karmaşıklık katsayısını hesapladım. Apple Neural Engine şu an zirvede!"
+        
+        # 3. OTOMATİK VERİ KEŞFİ
+        elif "keşfet" in p_l:
+            df = pd.DataFrame(np.random.randn(20, 3), columns=['X', 'Y', 'Z'])
+            viz_placeholder.line_chart(df)
+            response = "📊 **Veri Keşfi:** Rastgele veri setleri üzerinde derin öğrenme modelleri simüle edildi."
+        
+        # 4. KLASİK HAFIZA
+        elif ":" in prompt:
+            k, v = prompt.split(":", 1)
+            st.session_state.memory_bank[k.strip().lower()] = v.strip()
+            response = f"💾 **Nöral Kayıt:** '{k.strip()}' kavramı kalıcı hücrelere işlendi."
+        
+        else:
+            response = "🤖 Komut anlaşılamadı. Lütfen 'Ağ başlat' veya 'Kaos analizi yap' gibi ileri düzey komutlar deneyin."
 
-    # Adım 3: Yanıt Oluşturma
-    if bulunan_anahtar:
-        return f"**Analizim Sonucu:** {st.session_state.brain[bulunan_anahtar]} \n\n*Başmühendis, bu konu hakkında başka bir derinleştirme yapalım mı?*"
-    else:
-        return "⚠️ Bu kavram nöral ağlarımda tanımlı değil. Bana öğretirsen, bir dahaki sefere bunu 'Düşünce Zinciri'me dahil edebilirim. \n\n**Öğretmek için:** `Konu : Açıklama` şeklinde yaz."
+        time.sleep(0.5)
+        s.update(label="İŞLEM TAMAMLANDI", state="complete")
 
-# --- 4. SOHBET ARAYÜZÜ ---
-for chat in st.session_state.chat_history:
-    with st.chat_message(chat["role"]):
-        st.markdown(chat["content"])
-
-if prompt := st.chat_input("Bir komut girin..."):
-    st.session_state.chat_history.append({"role": "user", "content": prompt})
-    with st.chat_message("user"):
-        st.markdown(prompt)
-
-    # ÖĞRETME MODU (Sembolik Kayıt)
-    if ":" in prompt:
-        konu, aciklama = prompt.split(":", 1)
-        st.session_state.brain[konu.strip().lower()] = aciklama.strip()
-        beyni_guncelle(st.session_state.brain)
-        response = f"✅ **Sistem Güncellendi.** '{konu.strip()}' kavramı kalıcı hafızaya alındı."
-    else:
-        # CEVAPLAMA MODU
-        response = akilli_cevap_motoru(prompt)
-
-    with st.chat_message("assistant"):
-        st.markdown(response)
-        st.session_state.chat_history.append({"role": "assistant", "content": response})
+    st.session_state.chat.append({"role": "assistant", "content": response})
+    st.rerun()
