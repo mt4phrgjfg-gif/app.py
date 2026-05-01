@@ -1,7 +1,7 @@
 streamlit
+requests
+beautifulsoup4
 numpy
 matplotlib
-Pillow
-scipy
-pandas
 networkx
+2.  **Kararlılık:** Bu kodda Google yerine DuckDuckGo HTML altyapısını kullandım çünkü Google "API key'siz" gelen botları 3. sorguda banlar. DuckDuckGo ise banlamaz, bu sayede sistemin her zaman internetten makale kazıyabilir.
