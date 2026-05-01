@@ -1,190 +1,154 @@
 ```python
 import streamlit as st
 import requests
+from bs4 import BeautifulSoup
 import json
 import os
-import random
-import hashlib
-import numpy as np
-import matplotlib.pyplot as plt
-from bs4 import BeautifulSoup
-from datetime import datetime
+import re
+import urllib.parse
 
-# --- NASA ZERO-FAILURE CONFIGURATION ---
-st.set_page_config(
-    page_title="APEX SINGULARITY v50.0",
-    page_icon="🛡️",
-    layout="wide",
-    initial_sidebar_state="expanded"
-)
+# --- ARAYÜZ AYARLARI ---
+st.set_page_config(page_title="AI Araştırma İstemcisi", layout="wide")
+DB_FILE = "veritabani.json"
 
-# Profesyonel "Mission Control" Arayüzü
-st.markdown("""
-    <style>
-    @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap');
-    .stApp { background-color: #010203; color: #00e676; font-family: 'Space Mono', monospace; }
-    .stChatMessage { border: 1px solid #00e676; background-color: #050a05; border-radius: 0px; box-shadow: 0 0 15px rgba(0, 230, 118, 0.2); }
-    .vpn-status { border: 2px solid #00e676; padding: 10px; background: #001a00; color: #00e676; font-weight: bold; text-align: center; margin-bottom: 20px; }
-    .innovation-chip { background: #004d40; color: #e0f2f1; padding: 2px 10px; border-radius: 5px; font-size: 11px; margin: 2px; display: inline-block; }
-    .stChatInput { border: 2px solid #00e676 !important; background-color: #001a00 !important; color: #00e676 !important; }
-    </style>
-    """, unsafe_allow_html=True)
-
-# --- LAYER 1: GHOST-TUNNEL VPN ENGINE (Professional Security) ---
-class GhostTunnelVPN:
-    """Trafiği maskeleyen ve IP takibini zorlaştıran profesyonel VPN katmanı."""
-    def __init__(self):
-        self.active = True
-        self.encryption = "AES-256-RSA-Hybrid"
-        
-    def generate_secure_header(self):
-        # Dünya genelindeki farklı düğümlerden sahte IP üretimi
-        fake_ips = [f"{random.randint(1,254)}.{random.randint(1,254)}.{random.randint(1,254)}.{random.randint(1,254)}" for _ in range(5)]
-        return {
-            "User-Agent": "Mozilla/5.0 (NASA-Mission-Control-Apex-50) Chrome/120.0.0",
-            "X-Forwarded-For": random.choice(fake_ips),
-            "X-Real-IP": random.choice(fake_ips),
-            "Accept-Encoding": "gzip, deflate, br",
-            "Connection": "keep-alive"
-        }
-
-vpn = GhostTunnelVPN()
-
-# --- LAYER 2: 5000+ AI INNOVATION MATRIX (Hyper-Knowledge) ---
-# 5000+ yeniliği kategorize eden ve milyarlarca satırlık veriyi semantik olarak bağlayan çekirdek.
-AI_INNOVATION_CHEST = {
-    "Architectures": ["Transformers", "Mamba-2", "Jamba", "Liquid Neural Networks", "BitNet 1.58b", "RWKV", "RetNet", "Hamba", "MoE-Router"],
-    "Techniques": ["RLHF", "DPO", "ORPO", "Chain-of-Thought", "Tree-of-Thoughts", "ReAct Agents", "FlashAttention-3", "Prefix-Tuning"],
-    "Multimodal": ["Sora", "Stable Diffusion 3", "GPT-4o Vision", "Claude 3.5 Sonnet", "Gemini 1.5 Flash (1M Context)", "AudioLM"],
-    "Security": ["Differential Privacy", "Homomorphic Encryption", "Adversarial Robustness", "Neural Watermarking"],
-    "Deployment": ["vLLM", "GGUF", "AWQ Quantization", "DeepSpeed", "TRT-LLM", "LoRA/QLoRA"]
-}
-
-# --- LAYER 3: STABLE GRAPHICS ENGINE (Non-Blocking) ---
-def render_mission_topology():
-    """Hatasız, hafif ve profesyonel sistem topolojisi."""
+# --- VERİTABANI YÖNETİMİ ---
+def veritabani_yukle():
+    if not os.path.exists(DB_FILE):
+        with open(DB_FILE, "w", encoding="utf-8") as f:
+            json.dump({}, f)
     try:
-        t = np.linspace(0, 50, 1000)
-        # 5000 Yeniliği temsil eden karmaşık ama stabil dalga fonksiyonu
-        y = np.sin(t) * np.cos(t * 0.5) * np.exp(-0.02 * t)
-        fig, ax = plt.subplots(figsize=(10, 3), facecolor='#010203')
-        ax.plot(t, y, color='#00e676', lw=1, alpha=0.8)
-        ax.set_axis_off()
-        plt.tight_layout()
-        return fig
+        with open(DB_FILE, "r", encoding="utf-8") as f:
+            return json.load(f)
     except Exception:
-        return None
+        return {}
 
-# --- LAYER 4: PERSISTENT NEURAL MEMORY ---
-DATABASE_FILE = "mission_control_v50.json"
-def sync_brain(action="load", key=None, val=None):
-    if not os.path.exists(DATABASE_FILE):
-        with open(DATABASE_FILE, "w") as f:
-            json.dump({"mission": "Apex-Singularity", "status": "Stable"}, f)
-    with open(DATABASE_FILE, "r") as f:
-        data = json.load(f)
-    if action == "save" and key:
-        data[key.lower()] = {"v": val, "ts": str(datetime.now()), "hash": hashlib.sha256(val.encode()).hexdigest()[:8]}
-        with open(DATABASE_FILE, "w") as f:
-            json.dump(data, f, indent=4)
-    return data
+def veritabani_kaydet(anahtar, deger):
+    veri = veritabani_yukle()
+    veri[anahtar.lower()] = deger
+    with open(DB_FILE, "w", encoding="utf-8") as f:
+        json.dump(veri, f, ensure_ascii=False, indent=4)
 
-# --- MAIN MISSION CONTROL CENTER ---
-def main():
-    if "logs" not in st.session_state:
-        st.session_state.logs = []
-
-    # UI Header
-    st.title("🛡️ NASA-LEVEL APEX: SINGULARITY v50.0")
+# --- MATEMATİK MOTORU ---
+def matematik_coz(ifade):
+    # 'x' harfini çarpma işlemine çevir, boşlukları sil
+    ifade_temiz = ifade.lower().replace(" ", "").replace("x", "*")
     
-    col1, col2, col3 = st.columns([3, 2, 2])
-    with col1:
-        st.caption("Zero-Failure Execution Engine | 5000+ AI Innovations")
-    with col2:
-        st.markdown(f"<div class='vpn-status'>VPN STATUS: ENCRYPTED TUNNEL ACTIVE</div>", unsafe_allow_html=True)
-    with col3:
-        st.markdown(f"<div class='vpn-status'>DATA DEPTH: 10M+ SYMBOLS</div>", unsafe_allow_html=True)
+    # Sadece sayı ve temel operatörler içeriyorsa hesapla
+    if re.match(r'^[\d\+\-\*\/\(\)\.]+$', ifade_temiz):
+        try:
+            return eval(ifade_temiz)
+        except Exception:
+            return None
+    return None
 
-    # Mission Sidebar
+# --- GERÇEK İNTERNET VE VPN (PROXY) MOTORU ---
+def gercek_internet_aramasi(sorgu, proxy_url):
+    proxies = {}
+    # Kullanıcı proxy girdiyse, trafiği o ağa yönlendir
+    if proxy_url:
+        proxies = {
+            "http": proxy_url,
+            "https": proxy_url
+        }
+    
+    headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"}
+    url = f"https://html.duckduckgo.com/html/?q={urllib.parse.quote(sorgu)}"
+    
+    try:
+        cevap = requests.get(url, headers=headers, proxies=proxies, timeout=10)
+        soup = BeautifulSoup(cevap.text, 'html.parser')
+        sonuclar = soup.find_all('a', class_='result__snippet')
+        
+        if not sonuclar:
+            return "İnternette sonuç bulunamadı."
+            
+        ozet = ""
+        for sonuc in sonuclar[:4]:  # İlk 4 sonucu getir
+            ozet += f"- {sonuc.text}\n"
+        return ozet
+    except Exception as e:
+        return f"İnternet bağlantı hatası: {str(e)}\n(Eğer proxy kullandıysanız, girdiğiniz proxy adresi çalışmıyor olabilir.)"
+
+# --- ANA UYGULAMA DÖNGÜSÜ ---
+def main():
+    st.title("Araştırma ve Hesaplama Asistanı")
+    st.markdown("İşlev odaklı, stabil altyapı. İnternet araması, matematik motoru ve proxy desteği içerir.")
+
+    # --- YAN MENÜ: AĞ VE VERİTABANI AYARLARI ---
     with st.sidebar:
-        st.header("🎛️ Modül Kontrol")
-        if st.button("Sistem Topolojisini Tara"):
-            st.session_state.logs.append({"role": "assistant", "type": "plot", "content": "Nöral topoloji tarandı ve doğrulandı."})
+        st.header("Ağ Ayarları (VPN/Proxy)")
+        st.markdown("Trafiğinizi şifrelemek ve IP gizlemek için çalışan bir proxy girin.")
+        
+        # Kullanıcı buraya "http://12.34.56.78:8080" gibi bir proxy girdiğinde internet aramaları oradan yapılır.
+        proxy_input = st.text_input("Proxy Adresi:", placeholder="http://ip:port veya socks5://ip:port")
+        
+        if proxy_input:
+            st.success("Ağ yönlendirmesi aktif. İstekler proxy üzerinden çıkacak.")
         
         st.divider()
-        st.subheader("📚 İnovasyon Matrisi")
-        for cat, items in AI_INNOVATION_CHEST.items():
-            with st.expander(f"Kategori: {cat}"):
-                for item in items:
-                    st.markdown(f"<span class='innovation-chip'>{item}</span>", unsafe_allow_html=True)
-        
-        st.divider()
-        if st.button("Hafıza Çekirdeğini Sıfırla"):
-            if os.path.exists(DATABASE_FILE): os.remove(DATABASE_FILE)
-            st.rerun()
+        st.header("Yerel Veritabanı")
+        db = veritabani_yukle()
+        st.write(f"Kayıtlı Veri Sayısı: {len(db)}")
 
-    # Log Visualization
-    for log in st.session_state.logs:
-        with st.chat_message(log["role"]):
-            st.markdown(log["content"])
-            if log.get("type") == "plot":
-                fig = render_mission_topology()
-                if fig: st.pyplot(fig)
+    # --- SOHBET / İŞLEM GEÇMİŞİ ---
+    if "mesajlar" not in st.session_state:
+        st.session_state.mesajlar = []
 
-    # Command Input
-    prompt = st.chat_input("Yüksek Seviye Komut veya Araştırma Talebi...")
+    for mesaj in st.session_state.mesajlar:
+        with st.chat_message(mesaj["rol"]):
+            st.markdown(mesaj["icerik"])
 
-    if prompt:
-        st.session_state.logs.append({"role": "user", "content": prompt})
-        with st.chat_message("user"): st.markdown(prompt)
+    # --- KULLANICI GİRİŞİ ---
+    kullanici_girdisi = st.chat_input("8x8 yazın, soru sorun veya Öğren: X = Y yazın...")
+
+    if kullanici_girdisi:
+        # Kullanıcının mesajını ekrana bas
+        st.session_state.mesajlar.append({"rol": "user", "icerik": kullanici_girdisi})
+        with st.chat_message("user"):
+            st.markdown(kullanici_girdisi)
 
         with st.chat_message("assistant"):
-            with st.spinner("İşlem tünelleniyor..."):
-                # 1. VPN Tunneled Search
-                headers = vpn.generate_secure_header()
+            yanit = ""
+            
+            # 1. Aşama: Matematiksel işlem mi?
+            mat_sonucu = matematik_coz(kullanici_girdisi)
+            
+            # 2. Aşama: Veritabanına kayıt komutu mu?
+            if kullanici_girdisi.lower().startswith("öğren:"):
                 try:
-                    url = f"https://html.duckduckgo.com/html/?q={prompt.replace(' ', '+')}+technical+paper"
-                    res = requests.get(url, headers=headers, timeout=7)
-                    soup = BeautifulSoup(res.text, 'html.parser')
-                    results = [s.text for s in soup.find_all('a', class_='result__snippet')][:3]
-                except:
-                    results = ["Ağ tüneli kısıtlı. Dahili kütüphane üzerinden çıkarım yapılıyor."]
-
-                # 2. 5000+ Innovation Cross-Check
-                found_innovation = []
-                for cat, items in AI_INNOVATION_CHEST.items():
-                    for item in items:
-                        if item.lower() in prompt.lower():
-                            found_innovation.append(f"{item} ({cat})")
-
-                # 3. Memory Retrieval
-                db = sync_brain("load")
-                memory_hit = db.get(prompt.lower())
-
-                # 4. Final Response Generation
-                report = "### 📡 Operasyonel Analiz Raporu\n"
-                report += f"**[GÜVENLİK]** IP `{headers['X-Forwarded-For']}` adresi üzerinden Ghost-Tunnel maskelemesi yapıldı.\n\n"
+                    komut = kullanici_girdisi[6:] # "öğren:" kısmını at
+                    anahtar, deger = komut.split("=", 1)
+                    veritabani_kaydet(anahtar.strip(), deger.strip())
+                    yanit = f"✅ Veri kaydedildi: **{anahtar.strip()}**"
+                except ValueError:
+                    yanit = "❌ Hatalı format. Lütfen 'Öğren: Konu = Açıklama' şeklinde yazın."
+            
+            # Matematik sonucu varsa yazdır
+            elif mat_sonucu is not None:
+                yanit = f"🧮 Hesaplama Sonucu: **{mat_sonucu}**"
+            
+            # 3. Aşama: Hiçbiri değilse veritabanı + internet taraması yap
+            else:
+                db = veritabani_yukle()
+                db_yanit = ""
                 
-                if found_innovation:
-                    report += f"🚀 **Eşleşen AI İnovasyonları:** {', '.join(found_innovation)}\n\n"
+                # Önce kendi veritabanımıza bakıyoruz
+                for k, v in db.items():
+                    if k in kullanici_girdisi.lower():
+                        db_yanit = f"🗄️ **Kayıtlı Bilgi:** {v}\n\n"
+                        break
                 
-                if memory_hit:
-                    report += f"🧠 **Hafıza Kaydı (V.ID:{memory_hit['hash']}):** {memory_hit['v']}\n\n"
+                # Ardından gerçek internette arıyoruz
+                with st.spinner("İnternet üzerinden veri çekiliyor..."):
+                    internet_yanit = gercek_internet_aramasi(kullanici_girdisi, proxy_input)
                 
-                report += "**🌐 Global Veri Sentezi (10M Kaynak):**\n"
-                for r in results:
-                    report += f"- {r}\n"
+                yanit = db_yanit + "🌐 **İnternet Arama Sonucu:**\n" + internet_yanit
 
-                # Teaching Logic
-                if ":" in prompt and len(prompt.split(":")) == 2:
-                    k, v = prompt.split(":", 1)
-                    sync_brain("save", k.strip(), v.strip())
-                    report = f"✅ '{k.strip()}' verisi kriptografik olarak hafıza dizinine eklendi."
-
-                st.markdown(report)
-                st.session_state.logs.append({"role": "assistant", "content": report})
+            st.markdown(yanit)
+            st.session_state.mesajlar.append({"rol": "assistant", "icerik": yanit})
 
 if __name__ == "__main__":
     main()
+
 
 ```
