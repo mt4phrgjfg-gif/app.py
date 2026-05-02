@@ -1,6 +1,5 @@
 import streamlit as st
 import torch
-import json
 import re
 import math
 import requests
@@ -20,33 +19,48 @@ def model_yukle():
 tokenizer, model = model_yukle()
 
 # ============================================================
-# KAYNAKLAR — SADECE GÜVENİLİR SİTELER
+# KAYNAKLAR
 # ============================================================
 
 def wikipedia_ara(sorgu):
     try:
-        # Önce Türkçe dene
-        url = f"https://tr.wikipedia.org/api/rest_v1/page/summary/{requests.utils.quote(sorgu)}"
-        r = requests.get(url, timeout=5, headers={"User-Agent": "PrimeBrain/1.0"})
+        # 1. Direkt arama
+        arama = f"https://tr.wikipedia.org/w/api.php?action=query&list=search&srsearch={requests.utils.quote(sorgu)}&format=json&srlimit=3"
+        r = requests.get(arama, timeout=5, headers={"User-Agent": "PrimeBrain/1.0"})
         if r.status_code == 200:
-            data = r.json()
-            ozet = data.get("extract", "")
-            if ozet and len(ozet) > 50:
-                return f"📖 Wikipedia: {ozet[:600]}"
-        # Türkçe bulunamazsa arama yap
-        arama_url = f"https://tr.wikipedia.org/w/api.php?action=search&list=search&srsearch={requests.utils.quote(sorgu)}&format=json&srlimit=1"
-        r2 = requests.get(arama_url, timeout=5)
-        if r2.status_code == 200:
-            data2 = r2.json()
-            sonuclar = data2.get("query", {}).get("search", [])
+            sonuclar = r.json().get("query", {}).get("search", [])
+            for sonuc in sonuclar:
+                baslik = sonuc["title"]
+                ozet_url = f"https://tr.wikipedia.org/api/rest_v1/page/summary/{requests.utils.quote(baslik)}"
+                r2 = requests.get(ozet_url, timeout=5)
+                if r2.status_code == 200:
+                    ozet = r2.json().get("extract", "")
+                    if ozet and len(ozet) > 80:
+                        return f"📖 **{baslik}**\n\n{ozet[:800]}"
+    except:
+        pass
+    return None
+
+def wikipedia_bolum_ara(sorgu):
+    """Daha derin arama — birden fazla paragraf getirir"""
+    try:
+        arama = f"https://tr.wikipedia.org/w/api.php?action=query&list=search&srsearch={requests.utils.quote(sorgu)}&format=json&srlimit=1"
+        r = requests.get(arama, timeout=5)
+        if r.status_code == 200:
+            sonuclar = r.json().get("query", {}).get("search", [])
             if sonuclar:
                 baslik = sonuclar[0]["title"]
-                url2 = f"https://tr.wikipedia.org/api/rest_v1/page/summary/{requests.utils.quote(baslik)}"
-                r3 = requests.get(url2, timeout=5)
-                if r3.status_code == 200:
-                    ozet = r3.json().get("extract", "")
-                    if ozet:
-                        return f"📖 Wikipedia ({baslik}): {ozet[:600]}"
+                icerik_url = f"https://tr.wikipedia.org/w/api.php?action=query&titles={requests.utils.quote(baslik)}&prop=extracts&exintro=true&format=json"
+                r2 = requests.get(icerik_url, timeout=5)
+                if r2.status_code == 200:
+                    pages = r2.json().get("query", {}).get("pages", {})
+                    for page in pages.values():
+                        icerik = page.get("extract", "")
+                        # HTML taglarını temizle
+                        icerik = re.sub(r"<[^>]+>", "", icerik)
+                        icerik = re.sub(r"\n+", "\n", icerik).strip()
+                        if icerik:
+                            return f"📖 **{baslik}**\n\n{icerik[:1000]}"
     except:
         pass
     return None
@@ -68,12 +82,13 @@ def doviz_kuru(para):
         if r.status_code == 200:
             rates = r.json()["rates"]
             tl = rates.get("TRY", 0)
-            eur_usd = rates.get("EUR", 0)
+            eur = rates.get("EUR", 0)
+            gbp = rates.get("GBP", 0)
             if "euro" in para or "eur" in para:
-                return f"💱 1 EUR = {tl/eur_usd:.2f} TL"
-            if "dolar" in para or "usd" in para:
-                return f"💱 1 USD = {tl:.2f} TL"
-            return f"💱 1 USD = {tl:.2f} TL | 1 EUR = {tl/eur_usd:.2f} TL"
+                return f"💱 1 EUR = {tl/eur:.2f} TL"
+            if "sterlin" in para or "gbp" in para:
+                return f"💱 1 GBP = {tl/gbp:.2f} TL"
+            return f"💱 1 USD = {tl:.2f} TL | 1 EUR = {tl/eur:.2f} TL | 1 GBP = {tl/gbp:.2f} TL"
     except:
         pass
     return None
@@ -100,7 +115,7 @@ def matematik_coz(soru):
         if n: return f"tan({n[0]}°) = {math.tan(math.radians(float(n[0]))):.4f}"
     if "pisagor" in s:
         n = re.findall(r"\d+\.?\d*", s)
-        if len(n)>=2: return f"c = √({n[0]}²+{n[1]}²) = {math.sqrt(float(n[0])**2+float(n[1])**2):.4f}"
+        if len(n)>=2: return f"c = {math.sqrt(float(n[0])**2+float(n[1])**2):.4f}"
     if "yüzde" in s or "%" in s:
         n = re.findall(r"\d+\.?\d*", s)
         if len(n)>=2: return f"%{n[0]} × {n[1]} = {float(n[0])*float(n[1])/100:.2f}"
@@ -111,7 +126,7 @@ def matematik_coz(soru):
             return f"Ortalama = {sum(nums)/len(nums):.2f}"
     try:
         ifade = re.sub(r"[^0-9+\-*/().**]","",s).strip()
-        if ifade: return f"{ifade} = {eval(ifade)}"
+        if ifade and len(ifade)>1: return f"{ifade} = {eval(ifade)}"
     except:
         pass
     return None
@@ -131,22 +146,23 @@ def sohbet_et(mesaj, gecmis):
     return yanit if yanit else "Bunu anlayamadım, tekrar sorar mısın?"
 
 def akilli_cevap(mesaj):
-    m = mesaj.lower()
-    
+    m = mesaj.lower().strip()
+
     # Hava durumu
     if "hava" in m:
-        sehirler = ["istanbul","ankara","izmir","bursa","antalya",
-                    "adana","konya","gaziantep","kayseri","trabzon",
-                    "samsun","eskişehir","kocaeli","mersin","diyarbakır"]
+        sehirler = ["istanbul","ankara","izmir","bursa","antalya","adana",
+                    "konya","gaziantep","kayseri","trabzon","samsun",
+                    "eskişehir","kocaeli","mersin","diyarbakır","erzurum",
+                    "malatya","van","şanlıurfa","manisa"]
         for sehir in sehirler:
             if sehir in m:
                 return hava_durumu(sehir)
         return hava_durumu("Istanbul")
-    
+
     # Döviz
-    if any(k in m for k in ["dolar","euro","döviz","kur","usd","eur","sterlin"]):
+    if any(k in m for k in ["dolar","euro","döviz","kur","usd","eur","sterlin","gbp"]):
         return doviz_kuru(m)
-    
+
     # Matematik
     matematik_kelimeler = ["+","-","*","/","karekök","sin","cos","tan",
                            "pisagor","yüzde","%","faktoriyel","artı",
@@ -155,21 +171,19 @@ def akilli_cevap(mesaj):
         sonuc = matematik_coz(mesaj)
         if sonuc:
             return f"🔢 {sonuc}"
-    
-    # Wikipedia — nedir/kimdir/ne demek soruları
-    if any(k in m for k in ["nedir","kimdir","ne demek","hakkında","anlat","açıkla","kaç","tarih"]):
-        temiz = re.sub(r"(nedir|kimdir|ne demek|hakkında|anlat|açıkla|\?)", "", m).strip()
-        if temiz:
-            sonuc = wikipedia_ara(temiz)
-            if sonuc:
-                return sonuc
-    
-    # Genel Wikipedia araması
-    if len(mesaj) > 3:
-        sonuc = wikipedia_ara(mesaj)
+
+    # Wikipedia — her türlü soru
+    temiz = re.sub(r"(nedir|kimdir|ne demek|hakkında|anlat|açıkla|söyle|bilgi ver|\?)", "", m).strip()
+    if len(temiz) > 2:
+        # Önce derin arama dene
+        sonuc = wikipedia_bolum_ara(temiz)
         if sonuc:
             return sonuc
-    
+        # Bulamazsa basit arama
+        sonuc = wikipedia_ara(temiz)
+        if sonuc:
+            return sonuc
+
     return None
 
 # ============================================================
@@ -180,11 +194,11 @@ if "gecmis" not in st.session_state:
 if "sohbet" not in st.session_state:
     st.session_state.sohbet = []
 
-st.caption("Wikipedia • Hava Durumu • Döviz • Matematik • Sohbet")
+st.caption("📖 850K+ Wikipedia konusu • 🌤️ Hava • 💱 Döviz • 🔢 Matematik • 💬 Sohbet")
 
 for msg in st.session_state.sohbet:
     with st.chat_message(msg["rol"]):
-        st.write(msg["icerik"])
+        st.markdown(msg["icerik"])
 
 if mesaj := st.chat_input("Bir şey sor..."):
     with st.chat_message("user"):
@@ -192,10 +206,10 @@ if mesaj := st.chat_input("Bir şey sor..."):
     st.session_state.sohbet.append({"rol":"user","icerik":mesaj})
 
     with st.chat_message("assistant"):
-        with st.spinner("Düşünüyor..."):
+        with st.spinner("Araştırıyor..."):
             yanit = akilli_cevap(mesaj)
             if yanit:
-                st.info(yanit)
+                st.markdown(yanit)
             else:
                 yanit = sohbet_et(mesaj, st.session_state.gecmis)
                 st.write(yanit)
