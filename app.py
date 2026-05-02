@@ -3,10 +3,12 @@ import torch
 import json
 import re
 import math
+import requests
+from bs4 import BeautifulSoup
 from transformers import AutoTokenizer, AutoModelForCausalLM
 
 st.set_page_config(page_title="Prime Brain", page_icon="🧠")
-st.title("🧠 Prime Brain — Sohbet & Matematik AI")
+st.title("🧠 Prime Brain — Sohbet, Matematik & İnternet AI")
 
 @st.cache_resource
 def model_yukle():
@@ -18,6 +20,99 @@ def model_yukle():
 
 tokenizer, model = model_yukle()
 
+# ============================================================
+# İNTERNETTEN VERİ ÇEK
+# ============================================================
+def wikipedia_ara(sorgu):
+    try:
+        url = f"https://tr.wikipedia.org/api/rest_v1/page/summary/{sorgu.replace(' ', '_')}"
+        r = requests.get(url, timeout=5)
+        if r.status_code == 200:
+            data = r.json()
+            return data.get("extract", "")[:500]
+    except:
+        pass
+    return None
+
+def duckduckgo_ara(sorgu):
+    try:
+        url = f"https://api.duckduckgo.com/?q={sorgu}&format=json&lang=tr"
+        r = requests.get(url, timeout=5)
+        if r.status_code == 200:
+            data = r.json()
+            ozet = data.get("AbstractText", "")
+            if ozet:
+                return ozet[:500]
+            # İlgili konular
+            topics = data.get("RelatedTopics", [])
+            if topics:
+                return topics[0].get("Text", "")[:300]
+    except:
+        pass
+    return None
+
+def hava_durumu(sehir):
+    try:
+        url = f"https://wttr.in/{sehir}?format=3&lang=tr"
+        r = requests.get(url, timeout=5)
+        if r.status_code == 200:
+            return r.text.strip()
+    except:
+        pass
+    return None
+
+def doviz_kuru():
+    try:
+        url = "https://api.exchangerate-api.com/v4/latest/USD"
+        r = requests.get(url, timeout=5)
+        if r.status_code == 200:
+            data = r.json()
+            tl = data["rates"].get("TRY", "?")
+            eur = data["rates"].get("EUR", "?")
+            return f"1 USD = {tl:.2f} TL | 1 EUR = {float(tl)/float(eur):.2f} TL"
+    except:
+        pass
+    return None
+
+def internet_ara(mesaj):
+    mesaj_lower = mesaj.lower()
+    
+    # Hava durumu
+    if "hava" in mesaj_lower:
+        sehirler = ["istanbul","ankara","izmir","bursa","antalya",
+                    "istanbul","adana","konya","gaziantep","kayseri"]
+        for sehir in sehirler:
+            if sehir in mesaj_lower:
+                sonuc = hava_durumu(sehir)
+                if sonuc:
+                    return f"🌤️ {sonuc}"
+        sonuc = hava_durumu("Istanbul")
+        if sonuc:
+            return f"🌤️ {sonuc}"
+    
+    # Döviz
+    if any(k in mesaj_lower for k in ["dolar","euro","döviz","kur","usd","eur"]):
+        sonuc = doviz_kuru()
+        if sonuc:
+            return f"💱 {sonuc}"
+    
+    # Wikipedia
+    temiz = re.sub(r"(nedir|kimdir|ne demek|hakkında|anlat|açıkla)", "", mesaj_lower).strip()
+    if temiz:
+        sonuc = wikipedia_ara(temiz)
+        if sonuc and len(sonuc) > 50:
+            return f"📖 {sonuc}"
+    
+    # DuckDuckGo
+    sonuc = duckduckgo_ara(mesaj)
+    if sonuc and len(sonuc) > 30:
+        return f"🔍 {sonuc}"
+    
+    return None
+
+# ============================================================
+# MATEMATİK
+# ============================================================
 def matematik_coz(soru):
     soru = soru.lower()
     soru = soru.replace("artı","+").replace("eksi","-")
@@ -51,6 +146,9 @@ def matematik_coz(soru):
         pass
     return None
 
+# ============================================================
+# SOHBET
+# ============================================================
 def sohbet_et(mesaj, gecmis):
     giris = "\n".join(gecmis[-6:]) + f"\nKullanici: {mesaj}\nPrimeBrain:"
     inputs = tokenizer.encode(giris, return_tensors="pt", max_length=512, truncation=True)
@@ -65,19 +163,21 @@ def sohbet_et(mesaj, gecmis):
     yanit = yanit.split("Kullanici:")[0].strip()
     return yanit
 
-# Sohbet geçmişi
+# ============================================================
+# STREAMLIT UI
+# ============================================================
 if "gecmis" not in st.session_state:
     st.session_state.gecmis = []
 if "sohbet" not in st.session_state:
     st.session_state.sohbet = []
 
-# Geçmiş mesajları göster
+st.caption("💡 Matematik, sohbet, hava durumu, döviz, wikipedia...")
+
 for msg in st.session_state.sohbet:
     with st.chat_message(msg["rol"]):
         st.write(msg["icerik"])
 
-# Kullanıcı girişi
-if mesaj := st.chat_input("Bir şey sor veya matematik hesapla..."):
+if mesaj := st.chat_input("Bir şey sor..."):
     with st.chat_message("user"):
         st.write(mesaj)
     st.session_state.sohbet.append({"rol": "user", "icerik": mesaj})
@@ -86,17 +186,22 @@ if mesaj := st.chat_input("Bir şey sor veya matematik hesapla..."):
                            "pisagor","yüzde","%","faktoriyel","artı",
                            "eksi","çarpı","bölü"]
     is_matematik = any(k in mesaj.lower() for k in matematik_kelimeler)
-    is_sayi = bool(re.search(r"\d", mesaj))
+    is_sayi = bool(re.search(r"\d", mesaj)) and len(mesaj) < 40
 
     with st.chat_message("assistant"):
         with st.spinner("Düşünüyor..."):
-            if is_matematik or (is_sayi and len(mesaj) < 40):
+            if is_matematik or is_sayi:
                 sonuc = matematik_coz(mesaj)
                 yanit = sonuc if sonuc else "Bu işlemi anlayamadım."
                 st.success(f"🔢 {yanit}")
             else:
-                yanit = sohbet_et(mesaj, st.session_state.gecmis)
-                st.write(yanit)
+                internet_sonuc = internet_ara(mesaj)
+                if internet_sonuc:
+                    yanit = internet_sonuc
+                    st.info(yanit)
+                else:
+                    yanit = sohbet_et(mesaj, st.session_state.gecmis)
+                    st.write(yanit)
                 st.session_state.gecmis.append(f"Kullanici: {mesaj}")
                 st.session_state.gecmis.append(f"PrimeBrain: {yanit}")
 
