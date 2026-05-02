@@ -1,154 +1,578 @@
-```python
-import streamlit as st
-import json
-import os
-import re
-import math
-import time
-import hashlib
-from datetime import datetime
-
-# =====================================================================
-# ETAP 1-2-3: ARAŞTIRMA, PLANLAMA VE TEMEL (ZERO-DEPENDENCY)
-# =====================================================================
-# Büyük şirketlerin yöntemi: Dış kütüphane bağımlılığını (pip install) 
-# minimize et. Bu, sistemin her ortamda %100 çalışmasını sağlar.
-
-class EnterpriseCore:
-    def __init__(self):
-        # ETAP 5 & 8: 250+ YENİ YAPAY ZEKA ÖZELLİĞİ VE İNOVASYON DİZİNİ
-        # Bu dizin, en güncel (Sora, Mamba, BitNet, FlashAttention) teknikleri içerir.
-        self.ai_index = {
-            "Mimari": ["Mamba (SSM)", "Transformer-XL", "Jamba", "MoE (Mixture of Experts)", "Liquid Neural Networks", "RetNet", "RWKV", "BitNet 1.58b"],
-            "Eğitim": ["RLHF", "DPO (Direct Preference Optimization)", "ORPO", "KTO", "Self-Play Fine-Tuning (SPIN)", "Rejection Sampling"],
-            "Hızlandırma": ["FlashAttention-3", "PagedAttention", "KV Cache Quantization", "AWQ", "GGUF/ExLlamaV2", "Speculative Decoding"],
-            "Multimodal": ["Sora (Video Gen)", "Stable Diffusion 3", "GPT-4o (Omni)", "Claude 3.5 Sonnet", "Gemini 1.5 Pro (2M Context)"],
-            "Ajanlar": ["Agentic RAG", "Tool Use (Function Calling)", "AutoGPT Loops", "Tree of Thoughts", "Chain of Verification"]
-        }
-        self.db_path = "enterprise_storage.json"
-        self._init_db()
-
-    def _init_db(self):
-        if not os.path.exists(self.db_path):
-            with open(self.db_path, "w", encoding="utf-8") as f:
-                json.dump({"version": "100.0", "status": "Stable"}, f)
-
-    # =====================================================================
-    # ETAP 4 & 7: HATA AYIKLAMA VE GÜVENLİ MATEMATİK (LOGIC LAYER)
-    # =====================================================================
-    # eval() kullanmadan, Python'ın kendi parser'ı ile %100 güvenli hesaplama.
-    def secure_calc(self, expression):
-        try:
-            # Temizlik ve standartlaştırma
-            expr = expression.lower().replace("x", "*").replace(":", "").replace(" ", "")
-            # Sadece güvenli karakter izni
-            if not re.match(r'^[\d\+\-\*\/\(\)\.]+$', expr):
-                return None
-            
-            # Dahili Python matematik motoru (Hata payı sıfır)
-            result = eval(expr, {"__builtins__": None}, {"math": math})
-            return result
-        except:
-            return None
-
-    # =====================================================================
-    # ETAP 9: SADE VE ŞIK ARAYÜZ / VPN KATMANI
-    # =====================================================================
-    def simulate_vpn(self):
-        """Gerçekçi bir VPN tünelleme simülasyonu ve IP maskeleme."""
-        nodes = ["Frankfurt-DE", "Ashburn-US", "Tokyo-JP", "Singapore-SG", "London-UK"]
-        node = nodes[int(time.time()) % len(nodes)]
-        ip = f"{hashlib.md5(str(time.time()).encode()).hexdigest()[:2]}.{random_int(1,254)}.{random_int(1,254)}"
-        return {"node": node, "ip": f"104.{ip}"}
-
-def random_int(a, b):
-    return int(a + (time.time() * 1000) % (b - a))
-
-# --- UI STYLING ---
-st.set_page_config(page_title="Apex Enterprise v100", layout="wide")
-
-st.markdown("""
-    <style>
-    .main { background-color: #0a0a0a; color: #e0e0e0; }
-    .stChatFloatingInputContainer { background-color: #1a1a1a !important; }
-    .vpn-tag { color: #00ff41; font-family: monospace; font-weight: bold; border: 1px solid #00ff41; padding: 2px 10px; border-radius: 4px; }
-    .ai-card { background: #111; border-left: 3px solid #3b82f6; padding: 10px; margin: 5px 0; }
-    </style>
-    """, unsafe_allow_html=True)
-
-# --- CORE EXECUTION ---
-def main():
-    core = EnterpriseCore()
-    
-    if "messages" not in st.session_state:
-        st.session_state.messages = []
-
-    # Sidebar: Bilgi Bankası ve VPN
-    with st.sidebar:
-        st.title("⚙️ Mission Control")
-        vpn_info = core.simulate_vpn()
-        st.markdown(f"<div class='vpn-tag'>VPN: {vpn_info['node']} ACTIVE</div>", unsafe_allow_html=True)
-        st.caption(f"Masked IP: {vpn_info['ip']}")
-        
-        st.divider()
-        st.subheader("250+ AI Innovation Matrix")
-        for cat, items in core.ai_index.items():
-            with st.expander(cat):
-                for item in items:
-                    st.write(f"• {item}")
-        
-        if st.button("Hafızayı Temizle"):
-            st.session_state.messages = []
-            st.rerun()
-
-    # Chat Display
-    st.title("Apex Enterprise v100")
-    st.caption("Llama-3 Standartlarında Doğruluk | Zero-Dependency Mimarisi")
-
-    for msg in st.session_state.messages:
-        with st.chat_message(msg["role"]):
-            st.markdown(msg["content"])
-
-    # Chat Input
-    prompt = st.chat_input("Komut girin (Matematik, AI sorgusu veya bilgi kaydı)...")
-
-    if prompt:
-        st.session_state.messages.append({"role": "user", "content": prompt})
-        with st.chat_message("user"):
-            st.markdown(prompt)
-
-        with st.chat_message("assistant"):
-            # 1. Matematik Kontrolü (Hatasız)
-            math_res = core.secure_calc(prompt)
-            
-            if math_res is not None:
-                response = f"### 🧮 Hesaplama Sonucu\n**{math_res}**\n\n*Hassasiyet: %100*"
-            
-            # 2. AI İnovasyon Sorgusu
-            elif any(x.lower() in prompt.lower() for x in ["mamba", "sora", "moe", "ai", "nedir"]):
-                response = "### 🚀 Stratejik AI Analizi\n"
-                response += "Sorgunuzdaki terimler Enterprise AI dizininde eşleşti. İşte analiz:\n\n"
-                for cat, items in core.ai_index.items():
-                    for item in items:
-                        if item.lower().split(' ')[0] in prompt.lower():
-                            response += f"<div class='ai-card'><b>{item} ({cat}):</b> Modern sistemlerde yüksek verimlilik sağlayan kritik bir bileşendir.</div>"
-                
-                if "analizi" not in response:
-                    response += "Sorgu tünellendi ancak dahili dizinde spesifik bir tanım bulunamadı. Llama-3 mantığıyla çıkarım yapılıyor: Bu teknoloji, büyük veri setlerinde parametre verimliliğini artırmak üzere tasarlanmıştır."
-            
-            # 3. Bilgi Kaydı (Öğrenme)
-            elif ":" in prompt and "=" in prompt:
-                key, val = prompt.split("=", 1)
-                response = f"✅ **Bilgi Mühürlendi:** `{key.strip()}` verisi yerel veritabanına işlendi."
-            
-            # 4. Genel Yanıt (Hatasızlık Garantisi)
-            else:
-                response = f"### 🛡️ Enterprise Yanıt\nSorgunuz güvenli VPN ({vpn_info['node']}) üzerinden işlendi. \n\nMatematiksel bir işlem ise lütfen operatörleri kullanın (8x8 gibi). Eğer bir AI terimi ise dizinimden otomatik bilgi çekilecektir."
-
-            st.markdown(response)
-            st.session_state.messages.append({"role": "assistant", "content": response})
-
-if __name__ == "__main__":
-    main()
-
-```
+{
+ "nbformat": 4,
+ "nbformat_minor": 0,
+ "metadata": {
+  "colab": {"provenance": [], "gpuType": "T4"},
+  "kernelspec": {"name": "python3", "display_name": "Python 3"},
+  "accelerator": "GPU"
+ },
+ "cells": [
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "# 🐱🐶 Kedi vs Köpek — Sıfırdan CNN + Transfer Learning\n",
+    "\n",
+    "### Bu notebook ne yapıyor?\n",
+    "1. ✅ Veriyi Kaggle'dan indir (25.000 görüntü)\n",
+    "2. ✅ Veriyi hazırla & augmentation uygula\n",
+    "3. ✅ Sıfırdan CNN modeli eğit\n",
+    "4. ✅ Transfer Learning ile MobileNetV2 fine-tune et\n",
+    "5. ✅ Sonuçları karşılaştır\n",
+    "6. ✅ Kendi fotoğrafını test et\n",
+    "7. ✅ Modeli kaydet → GitHub'a yükle\n",
+    "\n",
+    "> **Çalıştırmadan önce:** Colab → Runtime → Change runtime type → **T4 GPU** seç!"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "metadata": {},
+   "source": [
+    "# ============================================================\n",
+    "# ADIM 1: GPU KONTROL\n",
+    "# ============================================================\n",
+    "import torch\n",
+    "print('PyTorch:', torch.__version__)\n",
+    "print('GPU:', torch.cuda.get_device_name(0) if torch.cuda.is_available() else '❌ GPU YOK - Runtime > T4 GPU seç!')\n",
+    "device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')\n",
+    "print('Kullanılan cihaz:', device)"
+   ],
+   "execution_count": null,
+   "outputs": []
+  },
+  {
+   "cell_type": "code",
+   "metadata": {},
+   "source": [
+    "# ============================================================\n",
+    "# ADIM 2: VERİ İNDİR (Kaggle - 25.000 görüntü)\n",
+    "# ============================================================\n",
+    "# Kaggle API key gerekmez - direkt TensorFlow datasets kullanıyoruz\n",
+    "\n",
+    "!pip install -q tensorflow-datasets\n",
+    "\n",
+    "import tensorflow_datasets as tfds\n",
+    "import numpy as np\n",
+    "import matplotlib.pyplot as plt\n",
+    "import os\n",
+    "from PIL import Image\n",
+    "import warnings\n",
+    "warnings.filterwarnings('ignore')\n",
+    "\n",
+    "print('📥 Veri indiriliyor (ilk seferinde ~800MB, sabırla bekle)...')\n",
+    "# cats_vs_dogs: 23.262 görüntü, etiketli, hazır\n",
+    "dataset, info = tfds.load('cats_vs_dogs', with_info=True, as_supervised=True)\n",
+    "print('✅ Veri indirildi!')\n",
+    "print(info)"
+   ],
+   "execution_count": null,
+   "outputs": []
+  },
+  {
+   "cell_type": "code",
+   "metadata": {},
+   "source": [
+    "# ============================================================\n",
+    "# ADIM 3: VERİYİ PYTORCH İÇİN HAZIRLA\n",
+    "# ============================================================\n",
+    "import torch\n",
+    "import torch.nn as nn\n",
+    "import torch.optim as optim\n",
+    "from torch.utils.data import DataLoader, Dataset, random_split\n",
+    "from torchvision import transforms, models\n",
+    "import tensorflow as tf\n",
+    "\n",
+    "# Görüntüleri numpy'a çevir ve kaydet\n",
+    "print('🔄 Görüntüler hazırlanıyor...')\n",
+    "\n",
+    "IMG_SIZE = 224  # MobileNet için standart\n",
+    "MAX_SAMPLES = 5000  # Hızlı test için (tüm veri için 23262 yap)\n",
+    "\n",
+    "images_list = []\n",
+    "labels_list = []\n",
+    "\n",
+    "train_data = tfds.load('cats_vs_dogs', split='train', as_supervised=True)\n",
+    "\n",
+    "for i, (img, label) in enumerate(train_data.take(MAX_SAMPLES)):\n",
+    "    img_resized = tf.image.resize(img, [IMG_SIZE, IMG_SIZE])\n",
+    "    img_np = img_resized.numpy().astype(np.uint8)\n",
+    "    images_list.append(img_np)\n",
+    "    labels_list.append(label.numpy())\n",
+    "    if (i+1) % 1000 == 0:\n",
+    "        print(f'  {i+1}/{MAX_SAMPLES} görüntü işlendi...')\n",
+    "\n",
+    "images_np = np.array(images_list)\n",
+    "labels_np = np.array(labels_list)\n",
+    "print(f'✅ Toplam: {len(images_np)} görüntü | Kedi: {(labels_np==0).sum()} | Köpek: {(labels_np==1).sum()}')"
+   ],
+   "execution_count": null,
+   "outputs": []
+  },
+  {
+   "cell_type": "code",
+   "metadata": {},
+   "source": [
+    "# Örnek görüntüleri göster\n",
+    "fig, axes = plt.subplots(2, 5, figsize=(15, 6))\n",
+    "labels_tr = ['🐱 Kedi', '🐶 Köpek']\n",
+    "for i, ax in enumerate(axes.flat):\n",
+    "    ax.imshow(images_np[i])\n",
+    "    ax.set_title(labels_tr[labels_np[i]], fontsize=12)\n",
+    "    ax.axis('off')\n",
+    "plt.suptitle('Veri Seti Örnekleri', fontsize=16, fontweight='bold')\n",
+    "plt.tight_layout()\n",
+    "plt.show()"
+   ],
+   "execution_count": null,
+   "outputs": []
+  },
+  {
+   "cell_type": "code",
+   "metadata": {},
+   "source": [
+    "# ============================================================\n",
+    "# ADIM 4: PYTORCH DATASET SINIFI\n",
+    "# ============================================================\n",
+    "class KediKopekDataset(Dataset):\n",
+    "    def __init__(self, images, labels, transform=None):\n",
+    "        self.images = images\n",
+    "        self.labels = labels\n",
+    "        self.transform = transform\n",
+    "\n",
+    "    def __len__(self):\n",
+    "        return len(self.images)\n",
+    "\n",
+    "    def __getitem__(self, idx):\n",
+    "        img = Image.fromarray(self.images[idx])\n",
+    "        label = self.labels[idx]\n",
+    "        if self.transform:\n",
+    "            img = self.transform(img)\n",
+    "        return img, torch.tensor(label, dtype=torch.long)\n",
+    "\n",
+    "# Data augmentation (eğitim verisini çeşitlendir)\n",
+    "train_transform = transforms.Compose([\n",
+    "    transforms.RandomHorizontalFlip(p=0.5),\n",
+    "    transforms.RandomRotation(15),\n",
+    "    transforms.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2),\n",
+    "    transforms.RandomResizedCrop(224, scale=(0.8, 1.0)),\n",
+    "    transforms.ToTensor(),\n",
+    "    transforms.Normalize([0.485, 0.456, 0.406],\n",
+    "                         [0.229, 0.224, 0.225])  # ImageNet normalizasyonu\n",
+    "])\n",
+    "\n",
+    "val_transform = transforms.Compose([\n",
+    "    transforms.Resize(256),\n",
+    "    transforms.CenterCrop(224),\n",
+    "    transforms.ToTensor(),\n",
+    "    transforms.Normalize([0.485, 0.456, 0.406],\n",
+    "                         [0.229, 0.224, 0.225])\n",
+    "])\n",
+    "\n",
+    "# Dataset ve DataLoader\n",
+    "full_dataset = KediKopekDataset(images_np, labels_np)\n",
+    "train_size = int(0.8 * len(full_dataset))\n",
+    "val_size   = len(full_dataset) - train_size\n",
+    "train_idx, val_idx = random_split(range(len(full_dataset)),\n",
+    "                                   [train_size, val_size])\n",
+    "\n",
+    "train_dataset = KediKopekDataset(\n",
+    "    images_np[train_idx.indices], labels_np[train_idx.indices], train_transform)\n",
+    "val_dataset   = KediKopekDataset(\n",
+    "    images_np[val_idx.indices],   labels_np[val_idx.indices],   val_transform)\n",
+    "\n",
+    "train_loader = DataLoader(train_dataset, batch_size=32, shuffle=True,  num_workers=2)\n",
+    "val_loader   = DataLoader(val_dataset,   batch_size=32, shuffle=False, num_workers=2)\n",
+    "\n",
+    "print(f'✅ Eğitim: {len(train_dataset)} | Doğrulama: {len(val_dataset)}')"
+   ],
+   "execution_count": null,
+   "outputs": []
+  },
+  {
+   "cell_type": "code",
+   "metadata": {},
+   "source": [
+    "# ============================================================\n",
+    "# ADIM 5A: SIFIRDAN CNN MODELİ\n",
+    "# ============================================================\n",
+    "class SifirdanCNN(nn.Module):\n",
+    "    def __init__(self):\n",
+    "        super(SifirdanCNN, self).__init__()\n",
+    "\n",
+    "        # Konvolüsyon katmanları\n",
+    "        self.features = nn.Sequential(\n",
+    "            # Blok 1\n",
+    "            nn.Conv2d(3, 32, kernel_size=3, padding=1),\n",
+    "            nn.BatchNorm2d(32),\n",
+    "            nn.ReLU(inplace=True),\n",
+    "            nn.Conv2d(32, 32, kernel_size=3, padding=1),\n",
+    "            nn.BatchNorm2d(32),\n",
+    "            nn.ReLU(inplace=True),\n",
+    "            nn.MaxPool2d(2, 2),   # 224 → 112\n",
+    "            nn.Dropout2d(0.1),\n",
+    "\n",
+    "            # Blok 2\n",
+    "            nn.Conv2d(32, 64, kernel_size=3, padding=1),\n",
+    "            nn.BatchNorm2d(64),\n",
+    "            nn.ReLU(inplace=True),\n",
+    "            nn.Conv2d(64, 64, kernel_size=3, padding=1),\n",
+    "            nn.BatchNorm2d(64),\n",
+    "            nn.ReLU(inplace=True),\n",
+    "            nn.MaxPool2d(2, 2),   # 112 → 56\n",
+    "            nn.Dropout2d(0.2),\n",
+    "\n",
+    "            # Blok 3\n",
+    "            nn.Conv2d(64, 128, kernel_size=3, padding=1),\n",
+    "            nn.BatchNorm2d(128),\n",
+    "            nn.ReLU(inplace=True),\n",
+    "            nn.Conv2d(128, 128, kernel_size=3, padding=1),\n",
+    "            nn.BatchNorm2d(128),\n",
+    "            nn.ReLU(inplace=True),\n",
+    "            nn.MaxPool2d(2, 2),   # 56 → 28\n",
+    "            nn.Dropout2d(0.3),\n",
+    "\n",
+    "            # Blok 4\n",
+    "            nn.Conv2d(128, 256, kernel_size=3, padding=1),\n",
+    "            nn.BatchNorm2d(256),\n",
+    "            nn.ReLU(inplace=True),\n",
+    "            nn.MaxPool2d(2, 2),   # 28 → 14\n",
+    "        )\n",
+    "\n",
+    "        # Tam bağlantılı katmanlar\n",
+    "        self.classifier = nn.Sequential(\n",
+    "            nn.AdaptiveAvgPool2d((4, 4)),  # → 256 * 4 * 4 = 4096\n",
+    "            nn.Flatten(),\n",
+    "            nn.Linear(256 * 4 * 4, 512),\n",
+    "            nn.ReLU(inplace=True),\n",
+    "            nn.Dropout(0.5),\n",
+    "            nn.Linear(512, 128),\n",
+    "            nn.ReLU(inplace=True),\n",
+    "            nn.Dropout(0.3),\n",
+    "            nn.Linear(128, 2)  # 2 sınıf: kedi, köpek\n",
+    "        )\n",
+    "\n",
+    "    def forward(self, x):\n",
+    "        x = self.features(x)\n",
+    "        x = self.classifier(x)\n",
+    "        return x\n",
+    "\n",
+    "model_cnn = SifirdanCNN().to(device)\n",
+    "total_params = sum(p.numel() for p in model_cnn.parameters())\n",
+    "print(f'✅ Sıfırdan CNN oluşturuldu')\n",
+    "print(f'   Toplam parametre: {total_params:,}')"
+   ],
+   "execution_count": null,
+   "outputs": []
+  },
+  {
+   "cell_type": "code",
+   "metadata": {},
+   "source": [
+    "# ============================================================\n",
+    "# EĞİTİM FONKSİYONU (her iki model için kullanacağız)\n",
+    "# ============================================================\n",
+    "def model_egit(model, train_loader, val_loader, epochs=15, lr=0.001, model_adi='model'):\n",
+    "    criterion = nn.CrossEntropyLoss()\n",
+    "    optimizer = optim.Adam(model.parameters(), lr=lr, weight_decay=1e-4)\n",
+    "    scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=epochs)\n",
+    "\n",
+    "    history = {'train_loss': [], 'train_acc': [],\n",
+    "               'val_loss':   [], 'val_acc':   []}\n",
+    "    best_val_acc = 0.0\n",
+    "\n",
+    "    for epoch in range(epochs):\n",
+    "        # --- EĞİTİM ---\n",
+    "        model.train()\n",
+    "        train_loss, train_correct, train_total = 0, 0, 0\n",
+    "        for images, labels in train_loader:\n",
+    "            images, labels = images.to(device), labels.to(device)\n",
+    "            optimizer.zero_grad()\n",
+    "            outputs = model(images)\n",
+    "            loss = criterion(outputs, labels)\n",
+    "            loss.backward()\n",
+    "            optimizer.step()\n",
+    "            train_loss += loss.item()\n",
+    "            _, predicted = outputs.max(1)\n",
+    "            train_total   += labels.size(0)\n",
+    "            train_correct += predicted.eq(labels).sum().item()\n",
+    "        scheduler.step()\n",
+    "\n",
+    "        # --- DOĞRULAMA ---\n",
+    "        model.eval()\n",
+    "        val_loss, val_correct, val_total = 0, 0, 0\n",
+    "        with torch.no_grad():\n",
+    "            for images, labels in val_loader:\n",
+    "                images, labels = images.to(device), labels.to(device)\n",
+    "                outputs = model(images)\n",
+    "                loss = criterion(outputs, labels)\n",
+    "                val_loss += loss.item()\n",
+    "                _, predicted = outputs.max(1)\n",
+    "                val_total   += labels.size(0)\n",
+    "                val_correct += predicted.eq(labels).sum().item()\n",
+    "\n",
+    "        t_acc = train_correct / train_total\n",
+    "        v_acc = val_correct   / val_total\n",
+    "        t_l   = train_loss    / len(train_loader)\n",
+    "        v_l   = val_loss      / len(val_loader)\n",
+    "\n",
+    "        history['train_loss'].append(t_l)\n",
+    "        history['train_acc'].append(t_acc)\n",
+    "        history['val_loss'].append(v_l)\n",
+    "        history['val_acc'].append(v_acc)\n",
+    "\n",
+    "        # En iyi modeli kaydet\n",
+    "        if v_acc > best_val_acc:\n",
+    "            best_val_acc = v_acc\n",
+    "            torch.save(model.state_dict(), f'{model_adi}_best.pth')\n",
+    "\n",
+    "        print(f'Epoch {epoch+1:2d}/{epochs} | '\n",
+    "              f'Train Loss: {t_l:.3f} Acc: {t_acc:.3f} | '\n",
+    "              f'Val Loss: {v_l:.3f} Acc: {v_acc:.3f} '\n",
+    "              f'{\"⭐\" if v_acc == best_val_acc else \"\"}')\n",
+    "\n",
+    "    print(f'\\n🏆 En iyi doğrulama doğruluğu: {best_val_acc:.4f}')\n",
+    "    return history\n",
+    "\n",
+    "print('✅ Eğitim fonksiyonu hazır')"
+   ],
+   "execution_count": null,
+   "outputs": []
+  },
+  {
+   "cell_type": "code",
+   "metadata": {},
+   "source": [
+    "# ============================================================\n",
+    "# ADIM 6A: SIFIRDAN CNN EĞİT\n",
+    "# ============================================================\n",
+    "print('🧠 Sıfırdan CNN eğitimi başlıyor...')\n",
+    "history_cnn = model_egit(\n",
+    "    model_cnn, train_loader, val_loader,\n",
+    "    epochs=15, lr=0.001, model_adi='sifirdan_cnn'\n",
+    ")"
+   ],
+   "execution_count": null,
+   "outputs": []
+  },
+  {
+   "cell_type": "code",
+   "metadata": {},
+   "source": [
+    "# ============================================================\n",
+    "# ADIM 5B: TRANSFER LEARNING — MobileNetV2\n",
+    "# (Sıfırdan CNN'den çok daha iyi sonuç verir)\n",
+    "# ============================================================\n",
+    "model_transfer = models.mobilenet_v2(pretrained=True)\n",
+    "\n",
+    "# Son katmanı değiştir (2 sınıf: kedi/köpek)\n",
+    "model_transfer.classifier = nn.Sequential(\n",
+    "    nn.Dropout(0.3),\n",
+    "    nn.Linear(model_transfer.last_channel, 256),\n",
+    "    nn.ReLU(),\n",
+    "    nn.Dropout(0.2),\n",
+    "    nn.Linear(256, 2)\n",
+    ")\n",
+    "\n",
+    "# İlk aşama: sadece yeni katmanları eğit\n",
+    "for param in model_transfer.features.parameters():\n",
+    "    param.requires_grad = False  # Dondur\n",
+    "\n",
+    "model_transfer = model_transfer.to(device)\n",
+    "trainable = sum(p.numel() for p in model_transfer.parameters() if p.requires_grad)\n",
+    "print(f'✅ MobileNetV2 hazır (Transfer Learning)')\n",
+    "print(f'   Eğitilecek parametre: {trainable:,} / {sum(p.numel() for p in model_transfer.parameters()):,}')"
+   ],
+   "execution_count": null,
+   "outputs": []
+  },
+  {
+   "cell_type": "code",
+   "metadata": {},
+   "source": [
+    "# ============================================================\n",
+    "# ADIM 6B: TRANSFER LEARNING EĞİT\n",
+    "# ============================================================\n",
+    "print('🚀 Transfer Learning eğitimi başlıyor...')\n",
+    "print('   Aşama 1: Sadece yeni katmanlar eğitiliyor...')\n",
+    "history_tl = model_egit(\n",
+    "    model_transfer, train_loader, val_loader,\n",
+    "    epochs=10, lr=0.001, model_adi='mobilenet'\n",
+    ")\n",
+    "\n",
+    "# Aşama 2: Fine-tuning — tüm modeli aç\n",
+    "print('\\n   Aşama 2: Fine-tuning (tüm model)...')\n",
+    "for param in model_transfer.features[-3:].parameters():\n",
+    "    param.requires_grad = True  # Son 3 bloğu aç\n",
+    "\n",
+    "history_tl2 = model_egit(\n",
+    "    model_transfer, train_loader, val_loader,\n",
+    "    epochs=5, lr=0.0001, model_adi='mobilenet_finetuned'\n",
+    ")"
+   ],
+   "execution_count": null,
+   "outputs": []
+  },
+  {
+   "cell_type": "code",
+   "metadata": {},
+   "source": [
+    "# ============================================================\n",
+    "# ADIM 7: SONUÇLARI KARŞILAŞTIR\n",
+    "# ============================================================\n",
+    "fig, axes = plt.subplots(1, 2, figsize=(14, 5))\n",
+    "\n",
+    "# Accuracy\n",
+    "axes[0].plot(history_cnn['val_acc'],    label='Sıfırdan CNN', color='#FF4B4B', linewidth=2)\n",
+    "axes[0].plot(history_tl['val_acc'],     label='MobileNet (dondurulmuş)', color='#00D4FF', linewidth=2)\n",
+    "axes[0].set_title('Doğrulama Doğruluğu', fontsize=14, fontweight='bold')\n",
+    "axes[0].set_xlabel('Epoch'); axes[0].set_ylabel('Accuracy')\n",
+    "axes[0].legend(); axes[0].grid(True, alpha=0.3)\n",
+    "axes[0].set_ylim(0, 1)\n",
+    "\n",
+    "# Loss\n",
+    "axes[1].plot(history_cnn['val_loss'],   label='Sıfırdan CNN', color='#FF4B4B', linewidth=2)\n",
+    "axes[1].plot(history_tl['val_loss'],    label='MobileNet', color='#00D4FF', linewidth=2)\n",
+    "axes[1].set_title('Doğrulama Kaybı', fontsize=14, fontweight='bold')\n",
+    "axes[1].set_xlabel('Epoch'); axes[1].set_ylabel('Loss')\n",
+    "axes[1].legend(); axes[1].grid(True, alpha=0.3)\n",
+    "\n",
+    "plt.suptitle('🏆 Model Karşılaştırması', fontsize=16, fontweight='bold')\n",
+    "plt.tight_layout()\n",
+    "plt.show()\n",
+    "\n",
+    "print(f'Sıfırdan CNN    → En iyi val acc: {max(history_cnn[\"val_acc\"]):.4f}')\n",
+    "print(f'MobileNetV2 TL  → En iyi val acc: {max(history_tl[\"val_acc\"]):.4f}')"
+   ],
+   "execution_count": null,
+   "outputs": []
+  },
+  {
+   "cell_type": "code",
+   "metadata": {},
+   "source": [
+    "# ============================================================\n",
+    "# ADIM 8: KENDİ FOTOĞRAFINI TEST ET\n",
+    "# ============================================================\n",
+    "from google.colab import files\n",
+    "from torchvision import transforms\n",
+    "import requests\n",
+    "from io import BytesIO\n",
+    "\n",
+    "def tahmin_yap(img_path_veya_url, model, transform=None):\n",
+    "    \"\"\"Fotoğraf yükle ve tahmin yap\"\"\"\n",
+    "    if transform is None:\n",
+    "        transform = val_transform\n",
+    "\n",
+    "    # URL mi yoksa dosya mı?\n",
+    "    if img_path_veya_url.startswith('http'):\n",
+    "        response = requests.get(img_path_veya_url)\n",
+    "        img = Image.open(BytesIO(response.content)).convert('RGB')\n",
+    "    else:\n",
+    "        img = Image.open(img_path_veya_url).convert('RGB')\n",
+    "\n",
+    "    img_tensor = transform(img).unsqueeze(0).to(device)\n",
+    "\n",
+    "    model.eval()\n",
+    "    with torch.no_grad():\n",
+    "        output = model(img_tensor)\n",
+    "        probs  = torch.softmax(output, dim=1)[0]\n",
+    "        pred   = output.argmax(1).item()\n",
+    "\n",
+    "    siniflar = ['🐱 Kedi', '🐶 Köpek']\n",
+    "    print(f'Tahmin: {siniflar[pred]}')\n",
+    "    print(f'Kedi güveni:  %{probs[0].item()*100:.1f}')\n",
+    "    print(f'Köpek güveni: %{probs[1].item()*100:.1f}')\n",
+    "\n",
+    "    plt.figure(figsize=(5,5))\n",
+    "    plt.imshow(img)\n",
+    "    plt.title(f'{siniflar[pred]}\\nKedi: %{probs[0]*100:.1f} | Köpek: %{probs[1]*100:.1f}',\n",
+    "              fontsize=13, fontweight='bold')\n",
+    "    plt.axis('off')\n",
+    "    plt.show()\n",
+    "    return pred, probs\n",
+    "\n",
+    "# --- KEND FOTOĞRAFINI YÜKLE ---\n",
+    "# Yöntem 1: Bilgisayarından yükle\n",
+    "# uploaded = files.upload()\n",
+    "# dosya_adi = list(uploaded.keys())[0]\n",
+    "# tahmin_yap(dosya_adi, model_transfer)\n",
+    "\n",
+    "# Yöntem 2: URL'den test et (hazır kedi fotoğrafı)\n",
+    "print('🐱 Test: Kedi fotoğrafı')\n",
+    "tahmin_yap('https://upload.wikimedia.org/wikipedia/commons/thumb/4/4d/Cat_November_2010-1a.jpg/1200px-Cat_November_2010-1a.jpg',\n",
+    "            model_transfer)"
+   ],
+   "execution_count": null,
+   "outputs": []
+  },
+  {
+   "cell_type": "code",
+   "metadata": {},
+   "source": [
+    "# ============================================================\n",
+    "# ADIM 9: MODELİ KAYDET VE GITHUB'A YÜKLE\n",
+    "# ============================================================\n",
+    "import json\n",
+    "\n",
+    "# Modeli kaydet\n",
+    "torch.save({\n",
+    "    'model_state_dict': model_transfer.state_dict(),\n",
+    "    'val_accuracy': max(history_tl['val_acc']),\n",
+    "    'siniflar': ['kedi', 'kopek'],\n",
+    "    'img_size': IMG_SIZE,\n",
+    "}, 'kedi_kopek_model.pth')\n",
+    "\n",
+    "print('✅ Model kaydedildi: kedi_kopek_model.pth')\n",
+    "\n",
+    "# GitHub'a yükle\n",
+    "print('''\n",
+    "📤 GitHub'a yüklemek için:\n",
+    "\n",
+    "1. Terminal aç (Mac/Linux) veya CMD (Windows)\n",
+    "2. Şu komutları çalıştır:\n",
+    "\n",
+    "   git init\n",
+    "   git add kedi_kopek_model.pth\n",
+    "   git commit -m \"Kedi köpek modeli eklendi - acc: %.4f\"\n",
+    "   git remote add origin https://github.com/KULLANICI_ADIN/REPO_ADIN.git\n",
+    "   git push -u origin main\n",
+    "\n",
+    "NOT: Model 10MB+ ise Git LFS kullan:\n",
+    "   git lfs install\n",
+    "   git lfs track \"*.pth\"\n",
+    "''' % max(history_tl['val_acc']))\n",
+    "\n",
+    "# Colab'dan direkt indir\n",
+    "from google.colab import files\n",
+    "files.download('kedi_kopek_model.pth')\n",
+    "print('✅ Model indirildi!')"
+   ],
+   "execution_count": null,
+   "outputs": []
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## 📊 Sonuç Özeti\n",
+    "\n",
+    "| Model | Yöntem | Beklenen Accuracy |\n",
+    "|-------|--------|------------------|\n",
+    "| Sıfırdan CNN | Kendi yazdığımız | ~%70-80 |\n",
+    "| MobileNetV2 | Transfer Learning | ~%90-95 |\n",
+    "\n",
+    "### Neden Transfer Learning daha iyi?\n",
+    "- MobileNet milyonlarca görüntüyle eğitildi\n",
+    "- Biz sadece son katmanı öğrettik\n",
+    "- Az veriyle çok iyi sonuç\n",
+    "\n",
+    "### Sıradaki adımlar:\n",
+    "1. `MAX_SAMPLES = 23262` yaparak tüm veriyi kullan\n",
+    "2. Daha fazla epoch dene (30-50)\n",
+    "3. EfficientNet veya ResNet dene\n",
+    "4. Kendi kedi/köpek fotoğraflarını test et!"
+   ]
+  }
+ ]
+}
