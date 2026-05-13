@@ -16,6 +16,7 @@ def sesli_cevap(metin):
         """, unsafe_allow_html=True)
     except:
         pass
+sesli_cevap(yanit)
 
  streamlit as st
 import re
