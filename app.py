@@ -17,8 +17,7 @@ def sesli_cevap(metin):
     except:
         pass
 sesli_cevap(yanit)
-
- streamlit as st
+streamlit as
 import re
 import math
 import requests
