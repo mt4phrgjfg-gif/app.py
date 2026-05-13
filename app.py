@@ -2,6 +2,20 @@
 from gtts import gTTs
 import base64
 import io
+def sesli_cevap(metin):
+    try:
+        tts = gTTS(text=metin[:200], lang="tr", slow=False)
+        ses_buffer = io.BytesIO()
+        tts.write_to_fp(ses_buffer)
+        ses_buffer.seek(0)
+        ses_b64 = base64.b64encode(ses_buffer.read()).decode()
+        st.markdown(f"""
+            <audio autoplay>
+                <source src="data:audio/mp3;base64,{ses_b64}" type="audio/mp3">
+            </audio>
+        """, unsafe_allow_html=True)
+    except:
+        pass
 
  streamlit as st
 import re
